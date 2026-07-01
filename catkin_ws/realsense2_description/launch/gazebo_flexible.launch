@@ -1,0 +1,39 @@
+<launch>
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="false"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="model" default="$(find realsense2_description)/urdf/test_d435_camera.urdf.xacro"/>
+  
+  <!-- New argument for world selection -->
+  <arg name="world_name" default="simulation_hollywood.world"/>
+  
+  <!-- Camera spawn position arguments -->
+  <arg name="camera_x" default="0"/>
+  <arg name="camera_y" default="0"/>
+  <arg name="camera_z" default="1.385"/> <!-- Default for table world -->
+  <arg name="camera_roll" default="0"/>
+  <arg name="camera_pitch" default="1.5708"/>
+  <arg name="camera_yaw" default="0"/>
+
+  <!-- robot description to load in rviz or gazebo -->
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="world_name" value="$(find ibvs)/worlds/$(arg world_name)"/>
+  </include>
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
+     args="-unpause -urdf -model realsense2_camera -param robot_description -x $(arg camera_x) -y $(arg camera_y) -z $(arg camera_z) -R $(arg camera_roll) -P $(arg camera_pitch) -Y $(arg camera_yaw)" respawn="false" output="screen"/>
+</launch>

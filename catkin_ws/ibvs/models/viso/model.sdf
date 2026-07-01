@@ -1,0 +1,17 @@
+<?xml version="1.6" ?>
+<sdf version="1.6">
+  <model name="resized">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://viso/meshes/resized.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>
+

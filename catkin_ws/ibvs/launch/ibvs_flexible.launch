@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+
+    <!-- Argument for world selection -->
+    <arg name="world_name" default="simulation_hollywood.world"/>
+    <arg name="use_table" default="false"/>
+    
+    <!-- Camera position based on whether we're using table or not -->
+    <arg name="camera_z" value="1.385" if="$(arg use_table)"/>
+    <arg name="camera_z" value="0.61" unless="$(arg use_table)"/>
+     
+    <!-- Set GAZEBO_MODEL_PATH to include all model directories -->
+    <env name="GAZEBO_MODEL_PATH" value="$(find ibvs)/models:$(find ibvs)/models/viso" />
+
+    
+    <arg name="model" default="$(find realsense2_description)/urdf/test_d435_camera.urdf.xacro" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model) use_nominal_extrinsics:=true add_plug:=true" />
+    <param name="/use_sim_time" value="true" />
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+      <param name="publish_frequency" type="double" value="30.0" />
+    </node>
+
+    
+    <include file="$(find realsense2_description)/launch/gazebo_flexible.launch">
+      <arg name="model" value="$(arg model)" />
+      <arg name="gui" value="true" />
+      <arg name="world_name" value="$(arg world_name)" />
+      <arg name="camera_z" value="$(arg camera_z)" />
+    </include>
+
+   
+
+    <arg name="gui" default="True" />
+    <param name="use_gui" value="$(arg gui)" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find realsense2_description)/rviz/urdf.rviz" required="true" />
+
+     
+     <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" />
+
+     
+     <node name="gazebo_vel_broadcaster" pkg="gazebo_vel_broadcaster" type="gazebo_vel_broadcaster.py" />
+
+</launch>

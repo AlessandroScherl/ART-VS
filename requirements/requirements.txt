@@ -1,0 +1,6 @@
+# Python requirements for the simulation-only container (no GPU / no vision models).
+# ROS Noetic + Gazebo are provided by the container; these are the extra pip deps.
+numpy
+scipy
+opencv-python
+PyYAML

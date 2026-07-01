@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+     <!-- Set GAZEBO_MODEL_PATH to include all model directories -->
+     <env name="GAZEBO_MODEL_PATH" value="$(find ibvs)/models:$(find ibvs)/models/viso" />
+
+    <arg name="model" default="$(find realsense2_description)/urdf/test_d435_camera.urdf.xacro" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model) use_nominal_extrinsics:=true add_plug:=true" />
+    <param name="/use_sim_time" value="true" />
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+      <param name="publish_frequency" type="double" value="30.0" />
+    </node>
+
+    <!-- Launch Gazebo with headless mode (no GUI) -->
+    <include file="$(find realsense2_description)/launch/gazebo.launch">
+      <arg name="model" value="$(arg model)" />
+      <arg name="gui" value="false" />
+      <arg name="headless" value="true" />
+    </include>
+
+    <!-- Disable RViz GUI -->
+    <arg name="gui" default="false" />
+    <param name="use_gui" value="$(arg gui)" />
+    <!-- Comment out RViz since we're running headless -->
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find realsense2_description)/rviz/urdf.rviz" required="true" /> -->
+
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" />
+    <node name="gazebo_vel_broadcaster" pkg="gazebo_vel_broadcaster" type="gazebo_vel_broadcaster.py" launch-prefix="bash -c 'sleep 2; $0 $@'" />
+</launch>

@@ -1,0 +1,81 @@
+# ART-VS .gitignore
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ipynb_checkpoints/
+*.ipynb
+
+# ---- ROS / Catkin ----
+catkin_ws/build/
+catkin_ws/devel/
+catkin_ws/logs/
+catkin_ws/.catkin_workspace
+catkin_ws/frames.gv
+catkin_ws/frames.pdf
+*.bag
+.ros/
+
+# ---- Generated simulation assets ----
+# Perturbed Hollywood posters produced by catkin_ws/ibvs/generate_perturbed_hollywood.py.
+# The base poster catkin_ws/ibvs/models/viso/ IS tracked; the generated viso1..visoN are not.
+catkin_ws/ibvs/models/viso[0-9]*/
+
+# ---- Experiment outputs (regenerate by running the benchmark) ----
+*.npz
+results/
+**/results/
+detection_visualizations/
+rotation_results/
+*.csv
+
+# ---- Model weights / checkpoints (downloaded from upstream, see README) ----
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+yolov8*.pt
+
+# ---- Archives & large binaries ----
+*.zip
+*.tar
+*.tar.gz
+*.gz
+*.7z
+*.rar
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# ---- Environments / secrets ----
+.env
+.env.local
+venv/
+env/
+
+# ---- IDE / editor / OS ----
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ---- Claude Code / local tooling ----
+.claude/
+CLAUDE.md
+
+# NOTE: image assets (poster textures, goal images, RealSense meshes) are
+# intentionally NOT ignored here -- they are required inputs and must be tracked.

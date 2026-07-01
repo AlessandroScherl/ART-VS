@@ -1,0 +1,50 @@
+# Vision-processing dependencies for ART-VS
+# These mirror the pip installs in docker/Dockerfile.vision_40XX and _50XX.
+# For the containerised setup you do NOT need to install these manually.
+#
+# PyTorch: install the build matching your GPU/CUDA (see README), e.g.
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128  # RTX 50XX (CUDA 12.8)
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118  # RTX 40XX (CUDA 11.8)
+torch
+torchvision
+torchaudio
+
+# Core CV / scientific stack
+numpy
+scipy
+opencv-python
+Pillow
+matplotlib
+pandas
+scikit-learn
+PyYAML
+tqdm
+
+# Vision Transformer backbones (DINOv2, DINOv3, AM-RADIO) + feature ops
+transformers
+timm
+einops
+
+# GPU monitoring (FPS / VRAM logging in the benchmark)
+pynvml
+
+# ROS Python helpers (only needed outside a full ROS install)
+rospkg
+catkin-pkg
+
+# ---------------------------------------------------------------------------
+# Language-guided ROI mode only (optional - not needed for the simulation
+# benchmark; used for cluttered / category-level real-robot targets).
+# LangSAM + LightTrack are installed from upstream, see README / docs/REAL_ROBOT.md:
+#   pip install git+https://github.com/luca-medeiros/lang-segment-anything.git
+#   git clone https://github.com/researchmm/LightTrack.git   (+ download weights)
+# ---------------------------------------------------------------------------
+ultralytics            # YOLO-World ROI detector
+supervision            # detection utilities
+termcolor
+torchmetrics
+tabulate
+lap                    # LightTrack tracker dependencies
+filterpy
+pykalman
+shapely

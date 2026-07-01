@@ -1,0 +1,107 @@
+# Real Robot Configuration - SIFT Classical Method (MODE 1 - Full Image)
+# For UR5 robot with RealSense D435i camera
+
+# ============================================
+# REAL ROBOT INTEGRATION PARAMETERS
+# ============================================
+robot_mode: 'real'
+
+# ROS Topics (real robot)
+camera_rgb_topic: '/camera/color/image_cropped'      # After crop_image_node.py
+camera_depth_topic: '/camera/aligned_depth_to_color/image_cropped'  # Cropped aligned depth (from crop_image_node.py)
+velocity_topic: '/servo_node/delta_twist_cmds'        # MoveIt Servo (ROS2)
+velocity_frame_id: 'tool0'                             # Servo command frame
+
+# TF Frames (UR5 + RealSense)
+camera_frame: 'camera_color_optical_frame'
+tool_frame: 'tool0'
+base_frame: 'base'
+
+# Convergence mode: 'visual_only' for real robot (no ground truth pose available)
+convergence_mode: 'visual_only'
+
+# Disable velocity-based convergence for real robot (only use feature stagnation)
+velocity_convergence_enabled: false
+
+# ============================================
+# VISUAL SERVOING PARAMETERS
+# ============================================
+backbone_model: 'classical-sift'
+vit_input_size: 0  # Not used for classical methods
+
+# Goal image
+image_path: 'goal_real_robot.jpg'
+
+# Detection keyword (not used - ROI detection disabled)
+detection_keyword: 'transparent bottle'
+
+# Camera parameters - RealSense D435i at 1440x1080 (after cropping from 1920x1080)
+u_max: 1440
+v_max: 1080
+f_x: 1366.8602294921875
+f_y: 1364.891357421875
+
+# Control parameters
+lambda_: 2.0
+max_velocity: 0.8
+num_pairs: 50  # More features for classical method
+
+# Sampling - Not used in real robot mode
+num_samples: 1
+num_circles: 1
+circle_radius_aug: 0.08
+box_sample_size: [1.2, 1.2, 0.3]
+
+# Convergence parameters
+velocity_convergence_threshold: 0.00008
+velocity_threshold_translation: 5.0e-19
+velocity_threshold_rotation: 5.0e-19
+error_threshold_ratio: 0.001
+error_threshold_absolute_translation: 0.1
+error_threshold_absolute_rotation: 0.1
+
+# Iteration control
+min_iterations: 50
+max_iterations: 500
+
+# Velocity smoothing
+max_velocity_vector_history: 200
+ema_alpha: 0.4
+
+# Feature detection settings
+thresh_filter_keypoints: 1
+background_thresh: 0.005
+use_feature_binning: false
+
+# Tiling settings (disabled for classical)
+use_tiling: false
+use_hybrid_mode: false
+
+# ROI settings - ENABLED (same LangSAM + LightTrack as ViT methods for fair comparison)
+use_roi_detection: true
+use_roi_tiling: false  # No tiling for classical
+detector_type: 'langsam_lighttrack'
+
+# Visualization
+enable_visualization: true
+
+# Stable convergence early stopping
+stable_convergence_enabled: true
+stable_convergence_position_threshold: 0.1
+stable_convergence_rotation_threshold: 0.1
+stable_convergence_window: 50
+
+# Rotation compensation - ALWAYS disabled for classical methods
+enable_rotation_compensation: false
+
+# Masking
+mask_path: 'mask_bottle.jpg'
+
+# Feature error stagnation detection
+feature_stagnation_enabled: false
+feature_stagnation_window: 10
+feature_stagnation_threshold: 0.5
+
+# Real robot convergence criteria
+real_robot_error_reduction_target: 0.90
+real_robot_max_iterations: 500

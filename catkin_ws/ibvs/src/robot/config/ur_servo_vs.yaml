@@ -1,0 +1,73 @@
+###############################################
+# MoveIt Servo config for Visual Servoing
+# Based on ur_moveit_config/config/ur_servo.yaml
+# with dampening layers relaxed for VS use.
+###############################################
+use_gazebo: false
+
+## Properties of incoming commands
+command_in_type: "speed_units"
+scale:
+  linear: 1.0
+  rotational: 1.0
+  joint: 0.01
+
+system_latency_compensation: 0.04
+
+## Properties of outgoing commands
+publish_period: 0.004  # 250 Hz
+low_latency_mode: false
+
+command_out_type: std_msgs/Float64MultiArray
+
+publish_joint_positions: true
+publish_joint_velocities: false
+publish_joint_accelerations: false
+
+## Smoothing — use ButterworthFilterPlugin (default for UR, only one available in Jazzy
+## that doesn't need extra params). Python EMA in compute_control_velocity() also smooths.
+smoothing_filter_plugin_name: "online_signal_smoothing::ButterworthFilterPlugin"
+
+is_primary_planning_scene_monitor: false
+
+## Incoming Joint State properties
+low_pass_filter_coeff: 10.0
+
+## MoveIt properties
+move_group_name: ur_manipulator
+planning_frame: base_link
+
+## Other frames
+ee_frame: tool0
+robot_link_command_frame: tool0
+
+## Stopping behaviour — generous timeout so brief GIL/CUDA stalls in the Python
+## VS loop don't trigger Servo's watchdog and halt the robot. The 100Hz republisher
+## normally keeps commands flowing, but occasional starvation under heavy torch ops
+## can produce >100ms gaps that would otherwise halt → cause visible stutter.
+incoming_command_timeout: 2.0          # was 0.1 — tolerate up to 2s gaps
+num_outgoing_halt_msgs_to_publish: 0   # was 4 — don't publish zero-velocity halts
+
+## Singularity — keep for real safety
+lower_singularity_threshold: 100.0
+hard_stop_singularity_threshold: 200.0
+
+joint_limit_margins: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+## Topic names
+cartesian_command_in_topic: ~/delta_twist_cmds
+joint_command_in_topic: ~/delta_joint_cmds
+joint_topic: /joint_states
+status_topic: ~/status
+command_out_topic: /forward_position_controller/commands
+
+## Collision checking — relaxed thresholds
+# Camera collision geometry removed from URDF, so false positives eliminated.
+# Reduced thresholds to avoid unnecessary deceleration near self-links.
+check_collisions: true
+collision_check_rate: 5.0
+collision_check_type: threshold_distance
+self_collision_proximity_threshold: 0.005   # 5mm (was 10mm)
+scene_collision_proximity_threshold: 0.01   # 10mm (was 20mm)
+collision_distance_safety_factor: 1000.0
+min_allowable_collision_distance: 0.01

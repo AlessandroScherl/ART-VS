@@ -1,0 +1,5 @@
+realsense_gazebo_plugin
+Copyright (c) 2016 Intel Corporation
+
+Licensed under the Apache License, Version 2.0 (see the LICENSE file in this
+directory). Gazebo plugin for simulating Intel RealSense cameras.

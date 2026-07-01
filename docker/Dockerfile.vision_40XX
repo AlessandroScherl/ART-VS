@@ -1,0 +1,123 @@
+####################################################################
+# Bare Minimum Vision Container for Manual Setup                 #
+# NVIDIA CUDA + Conda - You handle RoboStack installation        #
+# Compatible version for RTX 4070 Mobile (CUDA 11.8)            #
+####################################################################
+
+FROM ubuntu:20.04
+
+# Environment setup
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+# Install essential system dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    curl \
+    git \
+    nano \
+    vim \
+    htop \
+    build-essential \
+    cmake \
+    pkg-config \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Miniconda
+RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
+    bash miniconda.sh -b -p /opt/conda && \
+    rm miniconda.sh
+
+# Add conda to path
+ENV PATH="/opt/conda/bin:${PATH}"
+
+# Initialize conda
+RUN conda init bash
+
+# Create workspace
+RUN mkdir -p /root/vision_ws
+WORKDIR /root/vision_ws
+
+# Add helpful aliases and environment setup to bashrc
+RUN echo 'alias ll="ls -la"' >> ~/.bashrc && \
+    echo 'alias ..="cd .."' >> ~/.bashrc && \
+    echo 'export CUDA_VISIBLE_DEVICES=0' >> ~/.bashrc && \
+    echo 'echo "=== Vision Container with Auto RoboStack Setup (RTX 4070 Compatible) ==="' >> ~/.bashrc && \
+    echo 'echo "ROS environment: ros_env"' >> ~/.bashrc && \
+    echo 'echo "Activate with: mamba activate ros_env"' >> ~/.bashrc
+
+
+# ONLY CHANGE FROM ORIGINAL: PyTorch with CUDA 11.8 instead of CUDA 12.8
+RUN /bin/bash -c "source /opt/conda/etc/profile.d/conda.sh && \
+    conda deactivate && \
+    conda install mamba -c conda-forge --override-channels -y && \
+    mamba create -n ros_env -y && \
+    eval \"\$(mamba shell hook --shell bash)\" && \
+    mamba activate ros_env && \
+    conda config --env --add channels conda-forge && \
+    conda config --env --remove channels defaults && \
+    conda config --env --add channels robostack-noetic && \
+    mamba install ros-noetic-desktop -y && \
+    mamba deactivate && \
+    mamba activate ros_env && \
+    mamba install compilers cmake pkg-config make ninja colcon-common-extensions catkin_tools rosdep -y && \
+    mamba install ros-noetic-gazebo-msgs -y && \
+    pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 && \
+    pip3 install scipy numpy matplotlib opencv-python PyYAML tqdm scikit-learn Pillow pandas rospkg catkin-pkg && \
+    pip3 install --upgrade transformers timm einops ultralytics supervision termcolor torchmetrics tabulate && \
+    pip3 install lap filterpy pykalman shapely && \
+    pip3 install git+https://github.com/luca-medeiros/lang-segment-anything.git"
+
+# Clone LightTrack repository (official repo from researchmm)
+RUN git clone https://github.com/researchmm/LightTrack.git /root/LightTrack
+
+# Fix PyTorch 2.0+ compatibility - replace deprecated torch._six with collections.abc
+RUN sed -i 's/from torch._six import container_abcs/import collections.abc as container_abcs/' \
+    /root/LightTrack/lib/models/backbone/models/utils.py
+
+# Create tracking/ directory and snapshot directory for weights
+RUN mkdir -p /root/LightTrack/tracking && \
+    mkdir -p /root/LightTrack/snapshot/LightTrackM
+
+# Copy the wrapper file that provides simple LightTrack(weights, arch) interface
+# This wrapper is required for ObjectTracking4VS compatibility
+COPY docker/lighttrack_wrapper.py /root/LightTrack/tracking/lighttrack.py
+
+# Create __init__.py for tracking module
+RUN echo "from .lighttrack import LightTrack" > /root/LightTrack/tracking/__init__.py
+
+# LightTrack weights must be downloaded manually from Google Drive:
+# https://drive.google.com/drive/folders/1HXhdJO3yhQYw3O7nGUOXHu2S20Bs8CfI
+# Download 'model_best.pth.tar' and place as:
+# /root/LightTrack/snapshot/LightTrackM/LightTrackM.pth
+
+# Set PYTHONPATH for LightTrack (used at runtime for imports)
+ENV PYTHONPATH="/root/LightTrack"
+    
+    
+# Note: roscore command skipped as it would hang the Docker build
+# roscore should be run manually or in a separate process
+
+# Create activation script for the ros_env
+RUN echo '#!/bin/bash' > /root/activate_ros_env.sh && \
+    echo 'source /opt/conda/etc/profile.d/conda.sh' >> /root/activate_ros_env.sh && \
+    echo 'eval "$(mamba shell hook --shell bash)"' >> /root/activate_ros_env.sh && \
+    echo 'mamba activate ros_env' >> /root/activate_ros_env.sh && \
+    echo 'source /opt/conda/envs/ros_env/setup.bash' >> /root/activate_ros_env.sh && \
+    echo 'export ROS_MASTER_URI=http://localhost:11311' >> /root/activate_ros_env.sh && \
+    echo 'export ROS_IP=127.0.0.1' >> /root/activate_ros_env.sh && \
+    echo 'export DISABLE_ROS1_EOL_WARNINGS=1' >> /root/activate_ros_env.sh && \
+    echo 'export CUDA_VISIBLE_DEVICES=0' >> /root/activate_ros_env.sh && \
+    echo 'echo "ROS environment activated!"' >> /root/activate_ros_env.sh && \
+    chmod +x /root/activate_ros_env.sh
+
+# Add activation to bashrc
+RUN echo 'source /root/activate_ros_env.sh' >> ~/.bashrc
+
+# Keep container running
+CMD ["/bin/bash"]

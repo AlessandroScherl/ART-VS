@@ -1,0 +1,84 @@
+# DINOv3 Small 256x256 with 6x6 tiling configuration for Hollywood 500-sample evaluation
+# 256/16 = 16x16 patches per tile, 6x6 = 36 tiles optimal for 256x256
+# For fair comparison with AM-RADIO-256
+
+backbone_model: 'dinov3-small'
+vit_input_size: 256
+image_path: 'goalrgb.jpg'  # Hollywood poster
+
+# Camera parameters
+u_max: 1440
+v_max: 1080
+f_x: 1130.1787109375
+f_y: 1130.1787109375
+
+# Control parameters
+lambda_: 0.2
+max_velocity: 1.0
+num_pairs: 24
+
+# Sampling - 500 samples total
+num_samples: 500
+num_circles: 4
+circle_radius_aug: 0.08
+box_sample_size: [1.2, 1.2, 0.3]
+
+# Convergence parameters
+velocity_convergence_threshold: 0.00008
+velocity_threshold_translation: 5.0e-19
+velocity_threshold_rotation: 5.0e-19
+error_threshold_ratio: 0.001
+error_threshold_absolute_translation: 0.1
+error_threshold_absolute_rotation: 0.1
+
+# Iteration control
+min_iterations: 300
+max_iterations: 1500
+
+# Velocity smoothing
+max_velocity_vector_history: 200
+ema_alpha: 0.8
+
+# Feature detection settings
+thresh_filter_keypoints: 1
+background_thresh: 0.005
+use_feature_binning: true
+
+# Tiling settings (6x6 = 36 tiles)
+use_tiling: true
+use_hybrid_mode: true
+tiling_switch_iteration: 0  # Use threshold-based switching
+hybrid_switch_threshold: 0.2  # Switch at 80% error reduction
+roi_tiling_switch_threshold: 0.2  # Switch at 80% error reduction for MODE 4
+tile_number: 36
+tile_input_resolution: 1536  # 256 * 6 = 1536
+auto_calculate_tiles: false
+batch_process_tiles: true
+
+# ROI settings (disabled for Hollywood)
+use_roi_detection: false
+use_roi_tiling: false
+
+# Visualization (disabled for speed)
+enable_visualization: false
+
+# Stable convergence early stopping
+stable_convergence_enabled: true
+stable_convergence_position_threshold: 0.1  # cm (0.1cm = 1mm)
+stable_convergence_rotation_threshold: 0.1  # degrees
+stable_convergence_window: 50  # iterations
+
+# Rotation compensation
+enable_rotation_compensation: true
+rotation_mode: 'discrete'
+rotation_learning_rate: 1000.0
+rotation_delta: 5.0
+rotation_max_step: 5.0
+rotation_convergence_threshold: 1.0e-05
+rotation_max_iterations: 50
+
+# Mixed precision
+use_mixed_precision: false
+
+# No masking for Hollywood
+mask_path: null

@@ -1,0 +1,6 @@
+Intel RealSense ROS - realsense2_description
+Copyright (c) 2016 Intel Corporation
+
+Licensed under the Apache License, Version 2.0 (see the LICENSE file in this
+directory). This package was taken (with minor modifications) from the Intel
+RealSense ROS repository: https://github.com/IntelRealSense/realsense-ros

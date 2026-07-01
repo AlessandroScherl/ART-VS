@@ -1,0 +1,71 @@
+# AKAZE configuration for Hollywood 500-sample evaluation
+# Classical AKAZE feature detector
+
+backbone_model: 'classical-akaze'
+image_path: 'goalrgb.jpg'  # Hollywood poster
+vit_input_size: 518  # Required by config loader (not used for classical methods)
+
+# Camera parameters
+u_max: 1440
+v_max: 1080
+f_x: 1130.1787109375
+f_y: 1130.1787109375
+
+# Control parameters
+lambda_: 0.2
+max_velocity: 1.0
+num_pairs: 24
+
+# Sampling - 500 samples total
+num_samples: 500
+num_circles: 4
+circle_radius_aug: 0.08
+box_sample_size: [1.2, 1.2, 0.3]
+
+# Convergence parameters
+velocity_convergence_threshold: 0.00008
+velocity_threshold_translation: 5.0e-19
+velocity_threshold_rotation: 5.0e-19
+error_threshold_ratio: 0.001
+error_threshold_absolute_translation: 0.1
+error_threshold_absolute_rotation: 0.1
+
+# Iteration control
+min_iterations: 300
+max_iterations: 1500
+
+# Velocity smoothing
+max_velocity_vector_history: 200
+ema_alpha: 0.8  # Enable EMA smoothing for classical methods
+
+# Feature detection settings
+thresh_filter_keypoints: 1
+use_feature_binning: false
+
+# Tiling settings (disabled for classical)
+use_tiling: false
+use_hybrid_mode: false
+use_roi_detection: false
+use_roi_tiling: false
+
+# Visualization (disabled for speed)
+enable_visualization: false
+
+# Stable convergence early stopping (NEW - especially effective for AKAZE)
+stable_convergence_enabled: true
+stable_convergence_position_threshold: 0.1  # cm (0.1cm = 1mm)
+stable_convergence_rotation_threshold: 0.1  # degrees
+stable_convergence_window: 50  # iterations
+
+# Rotation compensation (disabled for classical methods)
+enable_rotation_compensation: false
+rotation_mode: 'discrete'
+rotation_angles: [0, 90, 180, 270]
+
+# Mixed precision (not used for classical)
+use_mixed_precision: false
+
+# Feature error stagnation detection (DISABLED for test)
+feature_stagnation_enabled: false
+feature_stagnation_window: 10  # iterations (not used)
+feature_stagnation_threshold: 0.5  # pixels (not used)

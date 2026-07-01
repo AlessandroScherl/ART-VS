@@ -1,0 +1,52 @@
+u_max: 1920 #640 #1280
+v_max: 1080 #480 #720
+lambda_: 0.03 #0.01 , 0.005
+f_x: 1506.9049072265625 #502.3016357421875 #695.9951
+f_y: 1506.9049072265625 #502.3016357421875  #695.9951 
+num_pairs: 24
+image_path: 'goalrgb.jpg'
+max_velocity: 1.0
+
+
+# DINO feature detection parameters
+dino_input_size: 518
+background_thresh: 0.005
+thresh_filter_keypoints: 1
+use_feature_binning: true  # Add this line
+
+# Sampling parameters
+num_samples: 4
+num_circles: 4
+circle_radius_aug: 0.08
+
+use_mixed_precision: false
+
+# OwlViT-32 feature detection parameters
+owl_input_size: 224 #384
+text_inputs: [['a woman']] #[['a silver tool', 'a red tool']] #[['a light brown table', 'a red sofa', 'a brown cabinetry', 'a sink']] #[['a table', 'a sofa', 'a brown cabinet']]
+
+# Convergence parameters
+velocity_convergence_threshold: 0.00008
+velocity_threshold_translation: 0.0000000000000000005
+velocity_threshold_rotation: 0.0000000000000000005
+error_threshold_ratio: 0.001
+error_threshold_absolute_translation: 0.1
+error_threshold_absolute_rotation: 0.1
+
+# Iteration control
+min_iterations: 300
+max_iterations: 1500
+
+# Velocity history for creating velocity mean
+max_velocity_vector_history: 200
+ema_alpha: 1
+
+
+use_tiling: true  # Enable/disable tiling
+#tile_number: 25   # Number of tiles (must be perfect square)
+#tile_input_resolution: 1120  # Resolution before tiling
+
+use_hybrid_mode: true
+hybrid_switch_threshold: 0.2  # Switch at 90% reduction
+tile_number: 9  # 4x4 grid for fine phase
+tile_input_resolution: 1554

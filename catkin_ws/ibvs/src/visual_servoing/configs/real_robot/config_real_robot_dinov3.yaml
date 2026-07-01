@@ -1,0 +1,139 @@
+# Real Robot Configuration - DINOv3 Small with ROI Tiling (MODE 4)
+# Uses LangSAM + LightTrack for object detection/tracking
+# For UR5 robot with RealSense D435i camera
+#
+# IMPORTANT: Before running, ensure:
+# 1. Robot driver:  ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur5 robot_ip:=<ROBOT_IP> launch_rviz:=false
+# 2. MoveIt+Servo:  ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5 launch_servo:=true
+# 3. Camera:        ../../robot/start_camera.sh   (RealSense color + aligned depth)
+# 4. Image cropper: python3 ../../robot/crop_image_node.py
+# Full startup sequence: docs/REAL_ROBOT.md
+
+# ============================================
+# REAL ROBOT INTEGRATION PARAMETERS
+# ============================================
+robot_mode: 'real'
+
+# ROS Topics (real robot)
+camera_rgb_topic: '/camera/color/image_cropped'      # After crop_image_node.py
+camera_depth_topic: '/camera/aligned_depth_to_color/image_cropped'  # Cropped aligned depth (from crop_image_node.py)
+velocity_topic: '/servo_node/delta_twist_cmds'        # MoveIt Servo (ROS2)
+velocity_frame_id: 'tool0'                             # Servo command frame
+
+# TF Frames (UR5 + RealSense)
+camera_frame: 'camera_color_optical_frame'
+tool_frame: 'tool0'
+base_frame: 'base'
+
+# Convergence mode: 'visual_only' for real robot (no ground truth pose available)
+convergence_mode: 'visual_only'
+
+# Disable velocity-based convergence for real robot (only use feature stagnation)
+velocity_convergence_enabled: false
+
+# ============================================
+# VISUAL SERVOING PARAMETERS (same as simulation)
+# ============================================
+backbone_model: 'dinov3-small'
+vit_input_size: 256
+
+# Goal image - MUST be pre-captured and placed in images/goal/goalrgb_1440x1080/ directory
+# The goal image should be captured at the desired end pose
+image_path: 'goal_real_robot.jpg'
+
+# Detection keyword for LangSAM/YOLOWorld (only used if use_roi_detection: true)
+# This is the text prompt to describe your target object (e.g., "red mug", "screwdriver", "laptop")
+detection_keyword: 'transparent bottle'  # <-- CHANGE THIS to describe your object!
+
+# Camera parameters - RealSense D435i at 1440x1080 (after cropping from 1920x1080)
+# Focal lengths unchanged by cropping, taken from original K matrix
+# Principal point: code computes c_x=u_max/2=720, c_y=v_max/2=540 (actual: 714.58, 543.25)
+u_max: 1440
+v_max: 1080
+f_x: 1366.8602294921875
+f_y: 1364.891357421875
+
+feature_hierarchy: 2
+
+# Control parameters
+lambda_: 2.0
+max_velocity: 0.8   # Lower for safety on real robot
+num_pairs: 24
+
+# Sampling - Not used in real robot mode (single goal pose)
+num_samples: 1
+num_circles: 1
+circle_radius_aug: 0.08
+box_sample_size: [1.2, 1.2, 0.3]
+
+# Convergence parameters
+velocity_convergence_threshold: 0.00008
+velocity_threshold_translation: 5.0e-19
+velocity_threshold_rotation: 5.0e-19
+error_threshold_ratio: 0.001
+error_threshold_absolute_translation: 0.1
+error_threshold_absolute_rotation: 0.1
+
+# Iteration control
+min_iterations: 50
+max_iterations: 500
+
+# Velocity smoothing (recommended for real robot)
+max_velocity_vector_history: 200
+ema_alpha: 0.4  # Match legacy ROS1 default for responsive control
+
+# Feature detection settings
+thresh_filter_keypoints: 1
+background_thresh: 0.005
+use_feature_binning: true
+
+# Tiling settings - DISABLED for full image, using ROI tiling instead
+use_tiling: false  # Disable full-image tiling (edge tiles fail due to mask)
+use_hybrid_mode: true  # CRITICAL: Enables automatic tile calculation for ROI tiling!
+tiling_switch_iteration: 0
+hybrid_switch_threshold: 0.2
+tile_number: 36
+tile_input_resolution: 1536
+auto_calculate_tiles: true  # Enable automatic tile calculation based on ROI bbox size
+batch_process_tiles: true
+
+# ROI settings - ENABLED for MODE 4 (LangSAM + LightTrack + ROI tiling)
+use_roi_detection: true
+use_roi_tiling: true
+detector_type: 'langsam_lighttrack'  # Use LangSAM for detection + LightTrack for tracking
+# roi_tile_number calculated automatically: ceil(bbox_size / vit_input_size) per dimension
+roi_tiling_switch_threshold: 0.2  # Switch to ROI tiling at 80% error reduction
+
+# Visualization (enable for debugging, disable for performance)
+enable_visualization: true
+
+# Stable convergence early stopping (based on visual feature error only)
+stable_convergence_enabled: true
+stable_convergence_position_threshold: 0.1  # cm (0.1cm = 1mm)
+stable_convergence_rotation_threshold: 0.1  # degrees
+stable_convergence_window: 50  # iterations
+
+# Rotation compensation
+enable_rotation_compensation: true
+rotation_mode: 'discrete'
+rotation_learning_rate: 1000.0
+rotation_delta: 5.0
+rotation_max_step: 5.0
+rotation_convergence_threshold: 1.0e-05
+rotation_max_iterations: 50
+
+# Mixed precision
+use_mixed_precision: false
+
+# Masking (set path to mask file if using object-specific mask)
+mask_path: 'mask_bottle.jpg'
+
+# Feature error stagnation detection (legacy - kept for compatibility)
+feature_stagnation_enabled: false
+feature_stagnation_window: 10
+feature_stagnation_threshold: 0.5  # pixels
+
+# Real robot convergence criteria (PRIMARY)
+# Converge when: error reduced by the target fraction OR max iterations reached
+real_robot_error_reduction_target: 0.90  # 90% reduction from initial error
+real_robot_max_iterations: 500  # Max iterations (marked as converged at this point)

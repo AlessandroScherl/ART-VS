@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software or build on ART-VS, please cite the paper below."
+title: "ART-VS: Adaptive Resolution Tiling for Vision Transformer Visual Servoing"
+abstract: >-
+  ART-VS is a training-free, backbone-agnostic visual servoing method that adapts
+  Vision Transformer feature granularity to servoing progress: a coarse phase at the
+  ViT's native resolution for robust initial alignment, followed by a tiled
+  high-resolution refinement phase for precise positioning.
+type: software
+authors:
+  - given-names: Alessandro
+    family-names: Scherl
+  - given-names: Bernhard
+    family-names: Neuberger
+  - given-names: Simon
+    family-names: Schwaiger
+  - given-names: David
+    family-names: Mulero-Pérez
+  - given-names: Lucas
+    family-names: Muster
+  - given-names: José
+    family-names: García-Rodríguez
+license: MIT
+url: "https://art-vs.github.io/"
+repository-code: "https://github.com/AlessandroScherl/ART-VS"
+preferred-citation:
+  type: article
+  title: "ART-VS: Adaptive Resolution Tiling for Vision Transformer Visual Servoing"
+  authors:
+    - given-names: Alessandro
+      family-names: Scherl
+    - given-names: Bernhard
+      family-names: Neuberger
+    - given-names: Simon
+      family-names: Schwaiger
+    - given-names: David
+      family-names: Mulero-Pérez
+    - given-names: Lucas
+      family-names: Muster
+    - given-names: José
+      family-names: García-Rodríguez
+  journal: "arXiv preprint arXiv:2606.19089"
+  year: 2026
+  notes: "Accepted at IROS 2026"
